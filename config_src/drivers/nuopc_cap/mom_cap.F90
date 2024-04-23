@@ -1539,6 +1539,8 @@ subroutine ModelAdvance(gcomp, rc)
   real(8)                                :: MPI_Wtime, timers
   logical                                :: write_restart
   logical                                :: write_restartfh
+  logical                                :: write_restart_eor, restart_eor
+
 
   rc = ESMF_SUCCESS
   if(profile_memory) call ESMF_VMLogMemInfo("Entering MOM Model_ADVANCE: ")
@@ -1678,7 +1680,7 @@ subroutine ModelAdvance(gcomp, rc)
   !---------------
   ! Get the stop alarm
   !---------------
-
+  restart_eor = .true.
   call ESMF_ClockGetAlarm(clock, alarmname='stop_alarm', alarm=stop_alarm, rc=rc)
   if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1709,7 +1711,19 @@ subroutine ModelAdvance(gcomp, rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    if (write_restart .or. write_restartfh) then
+    write_restart_eor = .false.
+    if (restart_eor) then
+      if (ESMF_AlarmIsRinging(stop_alarm, rc=rc)) then
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         write_restart_eor = .true.
+         call ESMF_LogWrite("It's Working DPS", ESMF_LOGMSG_INFO)
+         ! turn off the alarm
+         call ESMF_AlarmRingerOff(restart_alarm, rc=rc )
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+    end if
+
+    if (write_restart .or. write_restartfh .or. write_restart_eor) then
       ! determine restart filename
       call ESMF_ClockGetNextTime(clock, MyTime, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
