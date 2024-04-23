@@ -1716,7 +1716,6 @@ subroutine ModelAdvance(gcomp, rc)
       if (ESMF_AlarmIsRinging(stop_alarm, rc=rc)) then
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
          write_restart_eor = .true.
-         call ESMF_LogWrite("It's Working DPS", ESMF_LOGMSG_INFO)
          ! turn off the alarm
          call ESMF_AlarmRingerOff(restart_alarm, rc=rc )
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
