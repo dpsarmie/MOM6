@@ -1680,9 +1680,16 @@ subroutine ModelAdvance(gcomp, rc)
   !---------------
   ! Get the stop alarm
   !---------------
-  restart_eor = .true.
+  restart_eor = .false.
   call ESMF_ClockGetAlarm(clock, alarmname='stop_alarm', alarm=stop_alarm, rc=rc)
   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+  ! Handle end of run restart
+  call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+  if (isPresent .and. isSet) then
+     if (trim(cvalue) .eq. '.true.') restart_eor = .true.
+  end if
 
   !---------------
   ! If restart alarm exists and is ringing - write restart file
