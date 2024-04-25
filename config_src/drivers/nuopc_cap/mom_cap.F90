@@ -135,6 +135,7 @@ logical              :: profile_memory = .true.
 logical              :: grid_attach_area = .false.
 logical              :: use_coldstart = .true.
 logical              :: use_mommesh = .true.
+logical              :: restart_eor = .false.
 character(len=128)   :: scalar_field_name = ''
 integer              :: scalar_field_count = 0
 integer              :: scalar_field_idx_grid_nx = 0
@@ -646,6 +647,13 @@ subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
     endif
 
   endif
+
+  ! Read end of run restart config option
+  call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+  if (isPresent .and. isSet) then
+     if (trim(cvalue) .eq. '.true.') restart_eor = .true.
+  end if
 
   ocean_public%is_ocean_pe = .true.
   if (cesm_coupled .and. len_trim(inst_suffix)>0) then
@@ -1539,7 +1547,7 @@ subroutine ModelAdvance(gcomp, rc)
   real(8)                                :: MPI_Wtime, timers
   logical                                :: write_restart
   logical                                :: write_restartfh
-  logical                                :: write_restart_eor, restart_eor
+  logical                                :: write_restart_eor
 
 
   rc = ESMF_SUCCESS
@@ -1680,16 +1688,8 @@ subroutine ModelAdvance(gcomp, rc)
   !---------------
   ! Get the stop alarm
   !---------------
-  restart_eor = .false.
   call ESMF_ClockGetAlarm(clock, alarmname='stop_alarm', alarm=stop_alarm, rc=rc)
   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-  ! Handle end of run restart
-  call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-  if (ChkErr(rc,__LINE__,u_FILE_u)) return
-  if (isPresent .and. isSet) then
-     if (trim(cvalue) .eq. '.true.') restart_eor = .true.
-  end if
 
   !---------------
   ! If restart alarm exists and is ringing - write restart file
