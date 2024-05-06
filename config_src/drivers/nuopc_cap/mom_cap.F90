@@ -1822,7 +1822,7 @@ subroutine ModelAdvance(gcomp, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
          write_restart_eor = .true.
          ! turn off the alarm
-         call ESMF_AlarmRingerOff(restart_alarm, rc=rc )
+         call ESMF_AlarmRingerOff(stop_alarm, rc=rc )
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
     end if
