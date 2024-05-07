@@ -382,6 +382,12 @@ subroutine InitializeP0(gcomp, importState, exportState, clock, rc)
     geomtype = ESMF_GEOMTYPE_GRID
   endif
 
+  ! Read end of run restart config option
+  call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=value, isPresent=isPresent, isSet=isSet, rc=rc)
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+  if (isPresent .and. isSet) then
+     if (trim(value) .eq. '.true.') restart_eor = .true.
+  end if
 
 end subroutine
 
@@ -648,13 +654,6 @@ subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
     endif
 
   endif
-
-  ! Read end of run restart config option
-  call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-  if (ChkErr(rc,__LINE__,u_FILE_u)) return
-  if (isPresent .and. isSet) then
-     if (trim(cvalue) .eq. '.true.') restart_eor = .true.
-  end if
 
   ocean_public%is_ocean_pe = .true.
   if (cesm_coupled .and. len_trim(inst_suffix)>0) then
