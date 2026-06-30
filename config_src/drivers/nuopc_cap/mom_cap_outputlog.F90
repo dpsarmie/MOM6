@@ -114,7 +114,7 @@ type(outputlog_type) :: olog(n_freq)
 
 integer            :: toffset
 logical            :: debug
-logical            :: existflag
+logical            :: existflag, log_to_output
 character(len=256) :: restartdir
 character(len=256) :: outputdir
 character(len=2)   :: output_fh
@@ -147,6 +147,12 @@ subroutine outputlog_init(gcomp, mclock, rc)
   rc = ESMF_SUCCESS
   call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+  log_to_output = .false.
+  call NUOPC_CompAttributeGet(gcomp, name="mom6_write_log_to_output_dir", value=value, &
+       isPresent=isPresent, isSet=isSet, rc=rc)
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+  if (isPresent .and. isSet) log_to_output=(trim(value)=="true")
 
   call NUOPC_CompAttributeGet(gcomp, name="mom6_restart_dir", value=value, &
        isPresent=isPresent, isSet=isSet, rc=rc)
