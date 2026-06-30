@@ -348,7 +348,7 @@ subroutine outputlog_run(mclock, atStopTime, rc)
           olog(n)%time_lastrestart = lastrestart
           if (is_root_pe()) then
             call log_restart_fh(currTime-olog(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
-                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
+                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=outputdir, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           endif
         endif
@@ -375,7 +375,7 @@ subroutine outputlog_run(mclock, atStopTime, rc)
           olog(n)%time_lastrestart = lastrestart
           if (is_root_pe()) then
             call log_restart_fh(prevring, startTime, 'mom6.lstop.'//chour, prefixtime=.true., &
-                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
+                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=outputdir, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           endif
         endif
@@ -462,7 +462,7 @@ subroutine outputlog_restart(mclock, num_rest_files, rc)
   if (all(allDone) .eqv. .true.) then
     lastrestart = nextTime
     if (is_root_pe()) then
-      call log_restart_fh(nextTime, startTime, 'mom6.res', prefixtime=.true., rc=rc)
+      call log_restart_fh(nextTime, startTime, 'mom6.res', prefixtime=.true., output_dir=outputdir, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
   endif
