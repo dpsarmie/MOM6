@@ -282,6 +282,7 @@ subroutine outputlog_run(mclock, atStopTime, rc)
   character(len=16)  :: timestr
   character(len=256) :: fname
   character(len=256) :: subname='MOM_cap:(outputlog_run)'
+  character(len=256), allocatable :: logdir
   !----------------------------------------------------------------------------
 
   rc = ESMF_SUCCESS
@@ -301,6 +302,8 @@ subroutine outputlog_run(mclock, atStopTime, rc)
   filecomplete = .false.
   fsize(1) = nf90_fill_int
   nlen(1)  = nf90_fill_int
+
+  if (log_to_output) logdir=outputdir
 
   do n = 1,n_freq
     write(chour,'(I2.2,A)')freq(n),'h'
@@ -354,7 +357,7 @@ subroutine outputlog_run(mclock, atStopTime, rc)
           olog(n)%time_lastrestart = lastrestart
           if (is_root_pe()) then
             call log_restart_fh(currTime-olog(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
-                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=outputdir, rc=rc)
+                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=logdir, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           endif
         endif
@@ -381,7 +384,7 @@ subroutine outputlog_run(mclock, atStopTime, rc)
           olog(n)%time_lastrestart = lastrestart
           if (is_root_pe()) then
             call log_restart_fh(prevring, startTime, 'mom6.lstop.'//chour, prefixtime=.true., &
-                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=outputdir, rc=rc)
+                 lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, output_dir=logdir, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           endif
         endif
@@ -413,6 +416,7 @@ subroutine outputlog_restart(mclock, num_rest_files, rc)
   logical, allocatable :: allDone(:)
   character(len=8)     :: suffix
   character(len=256)   :: subname='MOM_cap:(outputlog_restart)'
+  character(len=256), allocatable :: logdir
   !----------------------------------------------------------------------------
 
   rc = ESMF_SUCCESS
@@ -430,6 +434,8 @@ subroutine outputlog_restart(mclock, num_rest_files, rc)
 
   allocate(allDone(1:num_rest_files))
   allDone = .false.
+
+  if (log_to_output) logdir=outputdir
 
   do n = 1,num_rest_files
     if (n == 1) then
@@ -468,7 +474,7 @@ subroutine outputlog_restart(mclock, num_rest_files, rc)
   if (all(allDone) .eqv. .true.) then
     lastrestart = nextTime
     if (is_root_pe()) then
-      call log_restart_fh(nextTime, startTime, 'mom6.res', prefixtime=.true., output_dir=outputdir, rc=rc)
+      call log_restart_fh(nextTime, startTime, 'mom6.res', prefixtime=.true., output_dir=logdir, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
   endif
